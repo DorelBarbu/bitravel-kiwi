@@ -26,11 +26,21 @@ router.post('/path', async (req, res) => {
     const {source, destination, date_from, date_to} = path[i];
     flights.push(api.getAllFlights(source, destination, date_from, date_to));
   }
-  flights = await Promise.all(flights);
-  flights = flights.reduce((combinedArray, flightChunk) => combinedArray.concat(flightChunk));
-  res.send({ 
-    flights 
-  }); 
+  try {
+    flights = await Promise.all(flights);
+    console.log(`flights length: ${flights.length}`);
+    console.log(`flights price: ${flights[0].price} ${flights[1].price}`);
+    console.log(flights[0]);
+    flights = flights.reduce((combinedArray, flightChunk) => combinedArray.concat(flightChunk));
+    res.send({ 
+      flights 
+    }); 
+  } catch(error) {
+    res.send({
+      isError: true,
+      message: error.message
+    });
+  }
 });
 
 module.exports = router;

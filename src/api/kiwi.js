@@ -1,5 +1,6 @@
 const axios = require('axios');
 const server = require('../utils/server');
+const _ = require('lodash');
 
 const getLocationId = async location => {
   try {
@@ -15,7 +16,10 @@ const getAllFlights = async (source, destination, date_from, date_to) => {
     const fly_from = (await getLocationId(source)).locations[0].id;
     const fly_to = (await getLocationId(destination)).locations[0].id;
     const response = await server.get(`flights?fly_to=${fly_to}&fly_from=${fly_from}&locale=ro-RO&date_from=${date_from}&date_to=${date_to}&max_stopovers=0`);
-    const flights = response.data.map(flight => ({
+    const bestFlight = _.minBy(response.data, flight => flight.price);
+    let flights = [bestFlight];
+    console.log(bestFlight.price, flights.length);
+    flights = flights.map(flight => ({
       countryFrom: flight.countryFrom,
       countryTo: flight.countryTo,
       price: flight.price,
@@ -27,7 +31,9 @@ const getAllFlights = async (source, destination, date_from, date_to) => {
       mapIdTo: flight.mapIdTo,
       cityFrom: flight.cityFrom,
       cityTo: flight.cityTo,
-      distance: flight.distance
+      distance: flight.distance,
+      aTimeUTC: flight.aTimeUTC,
+      dTimeUTC: flight.dTimeUTC
     }));;
     return flights;
   } catch(error) {
